@@ -11,14 +11,50 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Build and Package
+    - name: Install XcodeGen
+      run: brew install xcodegen
+    
+    - name: Create project.yml
+      run: |
+        cat > project.yml <<EOF
+        name: AccountingApp
+        options:
+          bundleIdPrefix: com.example
+          deploymentTarget:
+            iOS: "16.0"
+        targets:
+          AccountingApp:
+            type: application
+            platform: iOS
+            sources: [ContentView.swift]
+            settings:
+              base:
+                PRODUCT_BUNDLE_IDENTIFIER: com.example.AccountingApp
+                CODE_SIGNING_ALLOWED: NO
+                CODE_SIGNING_REQUIRED: NO
+        EOF
+    
+    - name: Generate Xcode Project
+      run: xcodegen generate
+    
+    - name: Build with xcodebuild
+      run: |
+        xcodebuild -project AccountingApp.xcodeproj \
+          -scheme AccountingApp \
+          -sdk iphoneos \
+          -configuration Release \
+          -derivedDataPath build \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO
+    
+    - name: Package IPA
       run: |
         mkdir Payload
-        cp ContentView.swift Payload/
+        cp -r build/Build/Products/Release-iphoneos/AccountingApp.app Payload/
         cd Payload
         zip -r ../app.ipa .
         cd ..
-        
+    
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
