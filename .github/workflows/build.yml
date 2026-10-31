@@ -1,3 +1,4 @@
+name: Build IPA
 
 on:
   push:
@@ -21,6 +22,8 @@ jobs:
           bundleIdPrefix: com.example
           deploymentTarget:
             iOS: "16.0"
+        settings:
+          SWIFT_VERSION: "5.0"
         targets:
           AccountingApp:
             type: application
@@ -29,6 +32,7 @@ jobs:
             settings:
               base:
                 PRODUCT_BUNDLE_IDENTIFIER: com.example.AccountingApp
+                GENERATE_INFOPLIST_FILE: YES
                 CODE_SIGNING_ALLOWED: NO
                 CODE_SIGNING_REQUIRED: NO
         EOF
@@ -44,7 +48,8 @@ jobs:
           -configuration Release \
           -derivedDataPath build \
           CODE_SIGNING_ALLOWED=NO \
-          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGNING_REQUIRED=NO \
+          SWIFT_VERSION=5.0
     
     - name: Package IPA
       run: |
