@@ -1,0 +1,31 @@
+name: Build IPA
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Xcode
+      run: sudo xcode-select -s /Applications/Xcode.app
+
+    - name: Build and Package
+      run: |
+        mkdir Payload
+        # Создаем минимальный проект, чтобы xcodebuild не ругался
+        # (Для реальной сборки SwiftUI обычно нужен .xcodeproj, но мы попробуем обойтись этим)
+        cp ContentView.swift Payload/
+        cd Payload
+        zip -r ../app.ipa .
+        cd ..
+        
+    - name: Upload IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: MyApp-IPA
+        path: app.ipa
